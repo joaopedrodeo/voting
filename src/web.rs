@@ -64,6 +64,14 @@ async fn vote(Path(id): Path<String>, State(store): State<Store>) -> Response {
                 dt { "Data" } dd { (vote.date) }
                 dt { "Identificação" } dd { (vote.source_id) }
                 dt { "Resultado" } dd { (vote.result) }
+                @if vote.yes.is_some() || vote.no.is_some() || vote.other.is_some() {
+                    dt { "Totais oficiais" }
+                    dd {
+                        @if let Some(yes) = vote.yes { "Sim: " (yes) " " }
+                        @if let Some(no) = vote.no { "Não: " (no) " " }
+                        @if let Some(other) = vote.other { "Outros: " (other) }
+                    }
+                }
             }
             p { "Votos individuais ainda não estão disponíveis nesta versão." }
             p { a href=(vote.source_url) { "Fonte oficial" } }

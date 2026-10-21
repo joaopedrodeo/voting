@@ -1,3 +1,4 @@
+pub mod camara;
 pub mod domain;
 pub mod store;
 

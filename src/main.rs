@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::net::SocketAddr;
-use voting::{app, store::Store};
+use voting::{app, camara::Camara, store::Store};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -15,6 +15,17 @@ async fn main() -> Result<()> {
 
     let listener = tokio::net::TcpListener::bind(address).await?;
     tracing::info!(address = %listener.local_addr()?, "servidor iniciado");
+    let sync_store = store.clone();
+    tokio::spawn(async move {
+        let camara = Camara::new(
+            "https://dadosabertos.camara.leg.br/api/v2".into(),
+            "https://dadosabertos.camara.leg.br/arquivos/votacoes/csv".into(),
+        );
+        let today = chrono::Utc::now().date_naive();
+        if let Err(error) = camara.sync_recent(&sync_store, today).await {
+            tracing::warn!(%error, "falha ao atualizar votações recentes da Câmara");
+        }
+    });
     axum::serve(listener, app(store)).await?;
     Ok(())
 }
