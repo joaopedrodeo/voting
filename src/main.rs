@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::net::SocketAddr;
-use voting::{app, camara::Camara, store::Store};
+use voting::{app, camara::Camara, senado::Senado, store::Store};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -24,6 +24,14 @@ async fn main() -> Result<()> {
         let today = chrono::Utc::now().date_naive();
         if let Err(error) = camara.sync_recent(&sync_store, today).await {
             tracing::warn!(%error, "falha ao atualizar votações recentes da Câmara");
+        }
+    });
+    let sync_store = store.clone();
+    tokio::spawn(async move {
+        let senado = Senado::new("https://legis.senado.leg.br/dadosabertos".into());
+        let today = chrono::Utc::now().date_naive();
+        if let Err(error) = senado.sync_recent(&sync_store, today).await {
+            tracing::warn!(%error, "falha ao atualizar votações recentes do Senado");
         }
     });
     axum::serve(listener, app(store)).await?;
