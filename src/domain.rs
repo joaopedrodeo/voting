@@ -58,7 +58,10 @@ mod tests {
     use super::*;
     #[test]
     fn only_officially_shared_identifiers_are_merged() {
-        assert_eq!(common_proposal_key("PEC", "221", "2019"), Some("PEC:221:2019".into()));
+        assert_eq!(
+            common_proposal_key("PEC", "221", "2019"),
+            Some("PEC:221:2019".into())
+        );
         assert_eq!(common_proposal_key("PEC", "221", "2018"), None);
         assert_eq!(common_proposal_key("REQ", "3", "2025"), None);
     }
